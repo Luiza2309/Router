@@ -1,0 +1,35 @@
+Giuglan Luiza-Viorica 321CB
+
+- primesc pachet si verific ether_header sa vad daca mac-ul destinatiei este routerul meu sau broadcast
+- daca este pentru mine verific ce protocol este
+
+IPv4:
+    - verific checksumul
+    - verific ttl => trimit icmp daca i-a expirat timpul de viata
+    - actualizez checksumul dupa formula
+    - verific daca routerul este destinatia finala (ip-ul destinatiei din iphdr e ip-ul routerului meu)
+    - trimit echo reply daca sunt destinatia
+    - daca nu sunt destinatia fac forwarding
+    - caut drumul cel mai bun folosind trie
+    - caut in cache sa vad daca am salvat mac-ul urmatoarei rute
+    - daca am mac-ul atunci il pun si trimit pachetul
+    - daca nu am mac-ul, atunci vreau sa il aflu
+    - bag pachetul actual intr-o coada de pachete ca sa nu blochez routerul
+    - fac un pachet nou de broadcast (ARP) ca sa intreb care este mac-ul lui best_route si il trimit
+
+ARP:
+    - verific daca am primit request sau reply
+    - am primit reply => parcurg coada de pachete si trimit toate pachetele care trebuiau sa ajunga la mac-ul primit
+                      => salvez perechea mac-ip in cache
+    - am primit request => trebuie sa dau mac-ul routerului meu si sa trimit pachetul pe aceeasi interfata
+
+Trie:
+    - inserare => calculez cati de 1 are masca (h)
+               => parcurg trie-ul in functie de prefix (0 - stanga; 1 - dreapta)
+               => cand am ajuns la nivelul h, inserez toata structura
+    - cautare  => parcurg trie-ul in functie de ip-ul cautat
+               => daca am un element in trie care nu e null, il salvez
+               => daca stanga sau dreapta pe care trebuie sa o iau e nula, trimit ultimul best_route salvat
+Voi avea cel mai specific best_route pentru ca ma duc tot mai jos in trie in functie de bitii din ip
+si voi ajunge tot mai aproape de ip-ul cautat, actualizand mereu best_route dupa elementele nenule gasite
+pe parcursul parcurgerii
